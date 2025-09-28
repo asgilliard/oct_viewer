@@ -6,7 +6,7 @@ A simple viewer for `.dat` images from an OCT scanner, built with Python and PyS
 
 - Python 3.10+  
 - [PySide6](https://pypi.org/project/PySide6/)
-- [uv](https://docs.astral.sh/uv/) (Python package manager) 
+- [uv](https://docs.astral.sh/uv/) - python package manager
 - NumPy
 
 ## Setup and use
