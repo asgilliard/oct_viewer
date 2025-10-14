@@ -27,29 +27,22 @@ uv run main.py
 
 Use menu bar to open .dat file.
 
-## Examples generation:
+## .dat generation
 
-You can generate an example image using numpy, like:
+You can generate an example .dat file using built-in generator:
 
-```python
-import numpy as np
-
-data = np.linspace(0, 255, 512*512, dtype=np.uint8).reshape((512, 512))
-data.tofile("images/example.dat")
 ```
-
-...and running it:
-
-```bash
 uv run generator.py
 ```
 
-...or you can use my built-in generator:
+Now open images/generated.dat
 
-```bash
-uv run dat_generator.py
+## Building design_ui.py
+
+```
+uv run pyside6-uic ui/design.ui -o design_ui.py
 ```
 
 ## Notes
-- Make sure .dat files are 512×512 and uint8.
+- Make sure .dat files are 512×512×512 and uint8.
 - The viewer uses QGraphicsView for scalable display.
