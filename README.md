@@ -37,7 +37,7 @@ pip install -r requirements.txt
 uv run main.py
 
 # Or using python:
-python -m main.py
+python main.py
 ```
 
 3. Use:
