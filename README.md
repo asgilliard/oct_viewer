@@ -1,8 +1,17 @@
 # OCT Image Viewer
 
+**For scientific analysis of 512×512×512 uint8 .dat volumes from an OCT scanner**
+
+## Quick Start
+1. Download `oct_viewer.exe` from [latest release](https://github.com/asgilliard/oct_viewer/releases/latest)
+2. Run and open your .dat file
+3. Use slider to navigate slices
+
+## For Developers
+
 A simple viewer for `.dat` images from an OCT scanner, built with Python and PySide6.
 
-## Requirements
+### Requirements
 
 - Python 3.10+  
 - NumPy
@@ -10,7 +19,7 @@ A simple viewer for `.dat` images from an OCT scanner, built with Python and PyS
 - [uv](https://docs.astral.sh/uv/) - python package manager (optional)
 
 
-## Setup and use
+### Setup and use
 
 1. Sync dependencies using uv:
 
@@ -44,7 +53,7 @@ python main.py
 
 Use menu bar to open .dat file.
 
-## .dat generation
+### .dat generation
 
 You can generate an example .dat file using built-in generator:
 
@@ -54,12 +63,12 @@ uv run generator.py
 
 Now open images/generated.dat
 
-## Building design_ui.py
+### Building design_ui.py
 
 ```
 uv run pyside6-uic ui/design.ui -o design_ui.py
 ```
 
-## Notes
+### Notes
 - Make sure .dat files are 512×512×512 and uint8.
 - The viewer uses QGraphicsView for scalable display.
