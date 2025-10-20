@@ -2,6 +2,8 @@
 
 **For scientific analysis of 512×512×512 uint8 .dat volumes from an OCT scanner**
 
+![Interface](screen.png)
+
 ## Quick Start
 1. Download `oct_viewer.exe` from [latest release](https://github.com/asgilliard/oct_viewer/releases/latest)
 2. Run and open your .dat file

@@ -12,3 +12,4 @@ wheels/
 .ruff_cache
 images/
 differences.md
+.obsidian
