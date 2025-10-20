@@ -21,7 +21,7 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self.actionOpen.triggered.connect(self.open_file)
         self.horizontalSliderY.valueChanged.connect(self.update_views)
 
-        # Кэш и флаги
+        # Cache and flags
         self._pixmap_cache = {}
         self._view_initialized = False
 
@@ -80,7 +80,7 @@ class Viewer(QMainWindow, Ui_MainWindow):
             self.image = np.memmap(file_name, dtype=np.uint8, mode='r', shape=(512, 512, 512))
             self.horizontalSliderY.setRange(0, 511)
             self.horizontalSliderY.setValue(256)
-            self._pixmap_cache.clear()  # Сброс кэша
+            self._pixmap_cache.clear()  # Cache reset
             self._view_initialized = False
             self.update_views(256)
         except Exception as e:
