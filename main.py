@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QGraphicsEllipseItem,
     QGraphicsItem,
+    QGraphicsPixmapItem,
     QGraphicsScene,
     QMainWindow,
 )
@@ -96,16 +97,13 @@ class Viewer(QMainWindow, Ui_MainWindow):
         if y not in self._pixmap_cache:
             self._pixmap_cache[y] = QPixmap.fromImage(self.array_to_qimage(slice_y))
 
-        for circle in self.circles:
-            self.scene.removeItem(circle)
-
         # Rendering
-        self.scene.clear()
-        self.scene.addPixmap(self._pixmap_cache[y])
+        for item in self.scene.items():
+            if isinstance(item, QGraphicsPixmapItem):
+                self.scene.removeItem(item)
 
-        # Re-adding circles
-        for circle in self.circles:
-            self.scene.addItem(circle)
+        self.current_pixmap_item = self.scene.addPixmap(self._pixmap_cache[y])
+        self.current_pixmap_item.setZValue(-1)  # to background
 
         self.scene.setSceneRect(0, 0, 512, 512)
 
