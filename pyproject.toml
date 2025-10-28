@@ -3,8 +3,12 @@ name = "oct_viewer"
 version = "0.1.1"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 dependencies = [
-    "numpy>=2.2.6",
-    "pyside6>=6.9.2",
+    "numpy==1.24.4",
+    "pyside2>=5.15.2.1",
+    "pyside2-stubs>=5.15.2.1.2",
 ]
+
+[dependency-groups]
+dev = []
