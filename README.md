@@ -11,13 +11,13 @@
 
 ## For Developers
 
-A simple viewer for `.dat` images from an OCT scanner, built with Python and PySide6.
+A simple viewer for `.dat` images from an OCT scanner, built with Python and PySide2.
 
 ### Requirements
 
-- Python 3.10+  
+- Python 3.8
 - NumPy
-- [PySide6](https://pypi.org/project/PySide6/)
+- [PySide2](https://pypi.org/project/PySide2/)
 - [uv](https://docs.astral.sh/uv/) - python package manager (optional)
 
 
@@ -25,13 +25,13 @@ A simple viewer for `.dat` images from an OCT scanner, built with Python and PyS
 
 1. Sync dependencies using uv:
 
-```bash
+```sh
 uv sync
 ```
 
 or by creating .venv and using pip:
 
-```bash
+```sh
 python -m venv .venv
 
 # Linux or macOS
@@ -44,7 +44,7 @@ pip install -r requirements.txt
 
 2. Run:
 
-```bash
+```sh
 uv run main.py
 
 # Or using python:
@@ -59,7 +59,7 @@ Use menu bar to open .dat file.
 
 You can generate an example .dat file using built-in generator:
 
-```
+```sh
 uv run generator.py
 ```
 
@@ -67,8 +67,8 @@ Now open images/generated.dat
 
 ### Building design_ui.py
 
-```
-uv run pyside6-uic ui/design.ui -o design_ui.py
+```sh
+uv run pyside2-uic ui/design.ui -o design_ui.py
 ```
 
 ### Notes
