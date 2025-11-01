@@ -9,7 +9,7 @@ from PySide2.QtWidgets import (
     QFileDialog,
     QGraphicsEllipseItem,
     QGraphicsItem,
-    QGraphicsPixmapItem,
+    # QGraphicsPixmapItem,
     QGraphicsScene,
     QMainWindow,
 )
@@ -81,7 +81,7 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self._pixmap_cache = {}
         self._mip_cache = {}
         self.max_cache_size = 50
-        self._current_slice_data = None
+        self._current_pixmap_item = None
         self.image_loaded = False
 
         # Circles
@@ -156,12 +156,12 @@ class Viewer(QMainWindow, Ui_MainWindow):
         mip_pixmap = QPixmap.fromImage(self.array_to_qimage(mip_z))
         
         # Rendering
-        for item in self.scene.items():
-            if isinstance(item, QGraphicsPixmapItem):
-                self.scene.removeItem(item)
+        if self._current_pixmap_item:
+            self._current_pixmap_item.setPixmap(self._pixmap_cache[z])
+        else:
+            self._current_pixmap_item = self.scene.addPixmap(self._pixmap_cache[z])
+            self._current_pixmap_item.setZValue(-1)
         
-        self.current_pixmap_item = self.scene.addPixmap(self._pixmap_cache[z])
-        self.current_pixmap_item.setZValue(-1)
         self.scene.setSceneRect(0, 0, 512, 512)
         
         # MIP
