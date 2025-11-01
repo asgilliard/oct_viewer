@@ -5,17 +5,15 @@
   "exclude": [
     "**/node_modules",
     "**/__pycache__",
-    "**/.venv",
-    "**/.git",
-    "**/.idea"
+    ".venv",
+    ".git",
+    "**/.idea",
+    "**/*.pyc"
   ],
   "venvPath": ".",
   "venv": ".venv",
   "reportMissingImports": true,
   "reportMissingTypeStubs": false,
-  "pythonVersion": "3.10",
-  "typeCheckingMode": "basic",
-  "reportUnusedCallResult": false,
-  "reportOptionalMemberAccess": false,
-  "reportOptionalSubscript": false
+  "pythonVersion": "3.8",
+  "typeCheckingMode": "basic"
 }

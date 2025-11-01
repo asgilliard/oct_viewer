@@ -75,10 +75,12 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self.graphicsView_MIP.setScene(self.scene_MIP)
 
         self.actionOpen.triggered.connect(self.open_file)
-        self.horizontalSliderY.valueChanged.connect(self.update_views)
+        self.horizontalSliderZ.valueChanged.connect(self.update_views)
 
         # Cache and flags
         self._pixmap_cache = {}
+        self._mip_cache = {}
+        self.max_cache_size = 50
         self._current_slice_data = None
         self.image_loaded = False
 
@@ -89,68 +91,83 @@ class Viewer(QMainWindow, Ui_MainWindow):
             circle.on_position_changed = self.update_histograms
             self.circles.append(circle)
             self.scene.addItem(circle)
-
-    # def array_to_qimage(self, arr: np.ndarray) -> QImage:
-    #     """Convert numpy array to QImage safely"""
-    #     if arr.size == 0:
-    #         return QImage()
-    #     arr_cont = np.ascontiguousarray(arr)
-    #     return QImage(
-    #         arr_cont.data,  #type: ignore
-    #         arr.shape[1],
-    #         arr.shape[0],
-    #         arr.shape[1],
-    #         QImage.Format_Grayscale8,
-    #     )
     
+    def compute_mip(self, z: int) -> np.ndarray:
+        """Compute MIP slice with caching"""
+        if z in self._mip_cache:
+            return self._mip_cache[z]
+        
+        z_min, z_max = max(0, z - 12), min(512, z + 13)
+        mip = np.max(self.image[z_min:z_max, :, :], axis=0)
+        
+        if len(self._mip_cache) > self.max_cache_size:
+            oldest = next(iter(self._mip_cache))
+            del self._mip_cache[oldest]
+        
+        self._mip_cache[z] = mip
+        return mip
+    
+    def open_file(self):
+        if hasattr(self, 'image'):
+            del self.image
+
+        file_name, _ = QFileDialog.getOpenFileName(self, 'Open .dat', '', 'DAT Files (*.dat)')
+        if not file_name:
+            return
+
+        try:
+            self.image = np.memmap(file_name, dtype=np.uint8, mode='r', shape=(512, 512, 512))
+            self.horizontalSliderZ.setRange(0, 511)
+            self.horizontalSliderZ.setValue(256)
+            self._pixmap_cache.clear()  # Cache reset
+            self.image_loaded = True
+            self.update_views(256)
+        except Exception as e:
+            logger.error(f'Failed to load file: {e}')
+
     def array_to_qimage(self, arr: np.ndarray) -> QImage:
+        """Convert numpy array to QImage safely"""
         if arr.size == 0:
             return QImage()
-        
-        # Гарантируем что массив C-contiguous и не копируем лишний раз
+
         if not arr.flags['C_CONTIGUOUS']:
             arr = np.ascontiguousarray(arr)
-        
-        height, width = arr.shape[0], arr.shape[1]
-        qimg = QImage(arr.data, width, height, width, QImage.Format_Grayscale8)  # type: ignore
-        
-        # ЯВНО сохраняем ссылку на массив чтобы он не удалился сборщиком мусора!
-        if not hasattr(self, '_qimage_refs'):
-            self._qimage_refs = []
-        self._qimage_refs.append(arr)  # ← КРИТИЧЕСКИ ВАЖНО!
-        
-        return qimg
 
-    def update_views(self, y):
+        height, width = arr.shape[0], arr.shape[1]
+        bytes_per_line = width
+        return QImage(arr.data, width, height, bytes_per_line, QImage.Format_Grayscale8)  # type: ignore
+
+    def update_views(self, z):
         if not self.image_loaded:
             return
         
-        if len(self._pixmap_cache) > 50:
-            self._pixmap_cache.clear()
+        # Cleanup pixmap cache
+        if len(self._pixmap_cache) > self.max_cache_size:
+            oldest = next(iter(self._pixmap_cache))
+            del self._pixmap_cache[oldest]
         
-        # Preparing data
-        slice_y = self.image[:, y, :].T
-        y_min, y_max = max(0, y - 12), min(512, y + 13)
-        mip_y = np.max(self.image[:, y_min:y_max, :], axis=1).T
-
-        # Caching slices
-        if y not in self._pixmap_cache:
-            self._pixmap_cache[y] = QPixmap.fromImage(self.array_to_qimage(slice_y))
-
+        # Cache main slice
+        if z not in self._pixmap_cache:
+            slice_z = self.image[z, :, :]
+            self._pixmap_cache[z] = QPixmap.fromImage(self.array_to_qimage(slice_z))
+        
+        # Get cached MIP as pixmap
+        mip_z = self.compute_mip(z)
+        mip_pixmap = QPixmap.fromImage(self.array_to_qimage(mip_z))
+        
         # Rendering
         for item in self.scene.items():
             if isinstance(item, QGraphicsPixmapItem):
                 self.scene.removeItem(item)
-
-        self.current_pixmap_item = self.scene.addPixmap(self._pixmap_cache[y])
-        self.current_pixmap_item.setZValue(-1)  # to background
-
+        
+        self.current_pixmap_item = self.scene.addPixmap(self._pixmap_cache[z])
+        self.current_pixmap_item.setZValue(-1)
         self.scene.setSceneRect(0, 0, 512, 512)
-
+        
         # MIP
         self.scene_MIP.clear()
-        self.scene_MIP.addPixmap(QPixmap.fromImage(self.array_to_qimage(mip_y)))
-
+        self.scene_MIP.addPixmap(mip_pixmap)
+        
         # FitInView
         self.graphicsView.fitInView(0, 0, 512, 512, Qt.KeepAspectRatio)
         self.graphicsView_MIP.fitInView(self.scene_MIP.sceneRect(), Qt.KeepAspectRatio)
@@ -160,24 +177,6 @@ class Viewer(QMainWindow, Ui_MainWindow):
             self.graphicsView.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
             self.graphicsView_MIP.fitInView(self.scene_MIP.sceneRect(), Qt.KeepAspectRatio)
         super().resizeEvent(event)
-
-    def open_file(self):
-        if hasattr(self, 'image'):
-            del self.image
-        
-        file_name, _ = QFileDialog.getOpenFileName(self, 'Open .dat', '', 'DAT Files (*.dat)')
-        if not file_name:
-            return
-
-        try:
-            self.image = np.memmap(file_name, dtype=np.uint8, mode='r', shape=(512, 512, 512))
-            self.horizontalSliderY.setRange(0, 511)
-            self.horizontalSliderY.setValue(256)
-            self._pixmap_cache.clear()  # Cache reset
-            self.image_loaded = True
-            self.update_views(256)
-        except Exception as e:
-            logger.error(f'Failed to load file: {e}')
 
     def get_circle_data(self, circle, slice_data):
         """Get data inside circle"""
@@ -235,7 +234,7 @@ class Viewer(QMainWindow, Ui_MainWindow):
             return
 
         # Get current slice data
-        current_y = self.horizontalSliderY.value()
+        current_y = self.horizontalSliderZ.value()
         slice_data = self.image[:, current_y, :].T  # Transpose for display
 
         # Extract data from both circles

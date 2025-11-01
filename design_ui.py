@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file 'design.ui'
@@ -12,10 +13,10 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 
-class Ui_MainWindow:
+class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
-            MainWindow.setObjectName("MainWindow")
+            MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1440, 805)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -23,21 +24,21 @@ class Ui_MainWindow:
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
         self.actionOpen = QAction(MainWindow)
-        self.actionOpen.setObjectName("actionOpen")
+        self.actionOpen.setObjectName(u"actionOpen")
         self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.widget = QWidget(self.centralwidget)
-        self.widget.setObjectName("widget")
-        self.widget.setGeometry(QRect(297, 60, 814, 484))
-        self.verticalLayout = QVBoxLayout(self.widget)
+        self.centralwidget.setObjectName(u"centralwidget")
+        self.layoutWidget = QWidget(self.centralwidget)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(297, 60, 814, 484))
+        self.verticalLayout = QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setSpacing(5)
-        self.verticalLayout.setObjectName("verticalLayout")
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setSpacing(5)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.graphicsView = QGraphicsView(self.widget)
-        self.graphicsView.setObjectName("graphicsView")
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.graphicsView = QGraphicsView(self.layoutWidget)
+        self.graphicsView.setObjectName(u"graphicsView")
         sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
@@ -50,8 +51,8 @@ class Ui_MainWindow:
 
         self.horizontalLayout.addWidget(self.graphicsView)
 
-        self.graphicsView_MIP = QGraphicsView(self.widget)
-        self.graphicsView_MIP.setObjectName("graphicsView_MIP")
+        self.graphicsView_MIP = QGraphicsView(self.layoutWidget)
+        self.graphicsView_MIP.setObjectName(u"graphicsView_MIP")
         sizePolicy1.setHeightForWidth(self.graphicsView_MIP.sizePolicy().hasHeightForWidth())
         self.graphicsView_MIP.setSizePolicy(sizePolicy1)
         self.graphicsView_MIP.setMinimumSize(QSize(400, 400))
@@ -65,45 +66,45 @@ class Ui_MainWindow:
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.widget1 = QWidget(self.widget)
-        self.widget1.setObjectName("widget1")
-        sizePolicy1.setHeightForWidth(self.widget1.sizePolicy().hasHeightForWidth())
-        self.widget1.setSizePolicy(sizePolicy1)
-        self.widget1.setMinimumSize(QSize(810, 30))
-        self.widget1.setMaximumSize(QSize(810, 30))
-        self.widget2 = QWidget(self.widget1)
-        self.widget2.setObjectName("widget2")
-        self.widget2.setGeometry(QRect(10, 0, 795, 27))
-        self.horizontalLayout_2 = QHBoxLayout(self.widget2)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.widget = QWidget(self.layoutWidget)
+        self.widget.setObjectName(u"widget")
+        sizePolicy1.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
+        self.widget.setSizePolicy(sizePolicy1)
+        self.widget.setMinimumSize(QSize(810, 30))
+        self.widget.setMaximumSize(QSize(810, 30))
+        self.layoutWidget1 = QWidget(self.widget)
+        self.layoutWidget1.setObjectName(u"layoutWidget1")
+        self.layoutWidget1.setGeometry(QRect(10, 0, 795, 27))
+        self.horizontalLayout_2 = QHBoxLayout(self.layoutWidget1)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalSpacer_2 = QSpacerItem(190, 17, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
 
-        self.horizontalSliderY = QSlider(self.widget2)
-        self.horizontalSliderY.setObjectName("horizontalSliderY")
-        sizePolicy1.setHeightForWidth(self.horizontalSliderY.sizePolicy().hasHeightForWidth())
-        self.horizontalSliderY.setSizePolicy(sizePolicy1)
-        self.horizontalSliderY.setMinimumSize(QSize(400, 25))
-        self.horizontalSliderY.setMaximumSize(QSize(400, 25))
-        self.horizontalSliderY.setOrientation(Qt.Horizontal)
+        self.horizontalSliderZ = QSlider(self.layoutWidget1)
+        self.horizontalSliderZ.setObjectName(u"horizontalSliderZ")
+        sizePolicy1.setHeightForWidth(self.horizontalSliderZ.sizePolicy().hasHeightForWidth())
+        self.horizontalSliderZ.setSizePolicy(sizePolicy1)
+        self.horizontalSliderZ.setMinimumSize(QSize(400, 25))
+        self.horizontalSliderZ.setMaximumSize(QSize(400, 25))
+        self.horizontalSliderZ.setOrientation(Qt.Horizontal)
 
-        self.horizontalLayout_2.addWidget(self.horizontalSliderY)
+        self.horizontalLayout_2.addWidget(self.horizontalSliderZ)
 
         self.horizontalSpacer = QSpacerItem(190, 17, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
 
-        self.verticalLayout.addWidget(self.widget1)
+        self.verticalLayout.addWidget(self.widget)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(MainWindow)
-        self.menuBar.setObjectName("menuBar")
+        self.menuBar.setObjectName(u"menuBar")
         self.menuBar.setGeometry(QRect(0, 0, 1440, 24))
         self.menu = QMenu(self.menuBar)
-        self.menu.setObjectName("menu")
+        self.menu.setObjectName(u"menu")
         MainWindow.setMenuBar(self.menuBar)
 
         self.menuBar.addAction(self.menu.menuAction())
@@ -115,8 +116,8 @@ class Ui_MainWindow:
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", "pyviewer", None))
-        self.actionOpen.setText(QCoreApplication.translate("MainWindow", "\u041e\u0442\u043a\u0440\u044b\u0442\u044c", None))
-        self.menu.setTitle(QCoreApplication.translate("MainWindow", "\u0424\u0430\u0439\u043b", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"oct viewer", None))
+        self.actionOpen.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u043a\u0440\u044b\u0442\u044c", None))
+        self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u0424\u0430\u0439\u043b", None))
     # retranslateUi
 

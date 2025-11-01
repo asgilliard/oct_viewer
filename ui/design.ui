@@ -17,10 +17,10 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>pyviewer</string>
+   <string>oct viewer</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>297</x>
@@ -128,7 +128,7 @@
          <height>30</height>
         </size>
        </property>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -152,7 +152,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QSlider" name="horizontalSliderY">
+          <widget class="QSlider" name="horizontalSliderZ">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
