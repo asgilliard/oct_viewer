@@ -5,7 +5,7 @@ from functools import lru_cache
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from PySide2.QtCore import QPointF, Qt
+from PySide2.QtCore import QPointF, Qt, QTimer
 from PySide2.QtGui import QBrush, QColor, QImage, QPen, QPixmap
 from PySide2.QtWidgets import (
     QApplication,
@@ -147,6 +147,11 @@ class Viewer(QMainWindow, Ui_MainWindow):
         histogram_layout.addWidget(self.histogram_canvas)
         
         self.setup_metrics_table()
+        
+        # Timer
+        self.histogram_update_timer = QTimer()
+        self.histogram_update_timer.setSingleShot(True)
+        self.histogram_update_timer.timeout.connect(self._delayed_histogram_update)
 
     def sync_circle_pair(self, sender, index):
         c1 = self.circles[index]
@@ -158,7 +163,7 @@ class Viewer(QMainWindow, Ui_MainWindow):
         target._updating = False
         
         self.update_metrics()
-        self.update_histograms()
+        self.histogram_update_timer.start(100)
     
     @lru_cache(maxsize=100)  # noqa: B019
     def compute_mip(self, z: int, layers: int = 25) -> np.ndarray:
@@ -290,7 +295,7 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self.graphicsView_MIP.fitInView(0, 0, 512, 512, Qt.KeepAspectRatio)
         
         self.update_metrics()
-        self.update_histograms()
+        self.histogram_update_timer.start(100)
 
     def on_layers_changed(self, new_layers):
         # Clear only those records where the number of layers has changed
@@ -397,6 +402,9 @@ class Viewer(QMainWindow, Ui_MainWindow):
             metrics1, 
             metrics2
         )
+    
+    def _delayed_histogram_update(self):
+        self.update_histograms()
         
     def update_histograms(self):
         """Update histograms only"""
