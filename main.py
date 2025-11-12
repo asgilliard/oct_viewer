@@ -94,11 +94,21 @@ class Viewer(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-
         self.image = np.zeros((1, 1, 1), dtype=np.uint8)
-
-        self.scene = QGraphicsScene(self)
+        
+        # Cache and flags
+        self._pixmap_cache = {}
+        self._mip_pixmap_cache = {}
+        self.mask_cache = {}
+        self.max_cache_size = 50
+        self._current_pixmap_item = None
+        self._current_mip_pixmap_item = None
+        self.image_loaded = False
+        
+        # Scenes
         view_size = self.graphicsView.size()
+        
+        self.scene = QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, view_size.width(), view_size.height())
         self.graphicsView.setScene(self.scene)
         self.graphicsView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -110,17 +120,22 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self.graphicsView_MIP.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.graphicsView_MIP.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
+        # Slider ranges
+        self.sliderZ.setRange(0, 511)
+        self.sliderMIP.setRange(2, 100)
+        
+        # Connections
         self.actionOpen.triggered.connect(self.open_file)
-        self.horizontalSliderZ.valueChanged.connect(self.update_views)
-
-        # Cache and flags
-        self._pixmap_cache = {}
-        self._mip_pixmap_cache = {}
-        self.mask_cache = {}
-        self.max_cache_size = 50
-        self._current_pixmap_item = None
-        self._current_mip_pixmap_item = None
-        self.image_loaded = False
+        self.sliderZ.valueChanged.connect(self.update_views)
+        self.sliderMIP.valueChanged.connect(self.on_layers_changed)
+        
+        # Slider values
+        self.sliderZ.setValue(256)
+        self.sliderMIP.setValue(25)
+        
+        # Labels
+        self.current_z_label.setText(f"Z: {self.sliderZ.value()}")
+        self.MIP_layers_label.setText(f"MIP: {self.sliderMIP.value()}")
 
         # Circles
         self.circles = []
@@ -224,8 +239,6 @@ class Viewer(QMainWindow, Ui_MainWindow):
 
         try:
             self.image = np.memmap(file_name, dtype=np.uint8, mode='r', shape=(512, 512, 512))
-            self.horizontalSliderZ.setRange(0, 511)
-            self.horizontalSliderZ.setValue(256)
             self._pixmap_cache.clear()  # сache reset
             self._mip_pixmap_cache.clear()  # mip cache reset
             self.image_loaded = True
@@ -247,6 +260,8 @@ class Viewer(QMainWindow, Ui_MainWindow):
         return QImage(arr.data, width, height, bytes_per_line, QImage.Format_Grayscale8)  # type: ignore
 
     def update_views(self, z):
+        self.current_z_label.setText(f"Z: {z}")
+        
         if not self.image_loaded or self.image is None:
             return
         
@@ -279,7 +294,8 @@ class Viewer(QMainWindow, Ui_MainWindow):
             self._current_mip_pixmap_item = None
         
         # Getting MIP data
-        mip_pixmap = self.get_mip_pixmap(z)
+        layers = self.sliderMIP.value()
+        mip_pixmap = self.get_mip_pixmap(z, layers)
         
         # Rendering MIP
         if self._current_mip_pixmap_item:
@@ -297,11 +313,17 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self.update_metrics()
         self.histogram_update_timer.start(100)
 
-    def on_layers_changed(self, new_layers):
+    def on_layers_changed(self, value):
+        self.MIP_layers_label.setText(f"MIP: {value}")
+        
         # Clear only those records where the number of layers has changed
-        keys_to_remove = [k for k in self._mip_pixmap_cache.keys() if k[1] != new_layers]
+        current_layers = value
+        keys_to_remove = [k for k in self._mip_pixmap_cache.keys() if k[1] != current_layers]
         for key in keys_to_remove:
             del self._mip_pixmap_cache[key]
+                
+        current_z = self.sliderZ.value()
+        self.update_views(current_z)        
 
     def resizeEvent(self, event):
         if self.image_loaded:  # only if file loaded
@@ -387,8 +409,9 @@ class Viewer(QMainWindow, Ui_MainWindow):
         if not self.image_loaded:
             return
     
-        current_z = self.horizontalSliderZ.value()
-        mip_data = self.compute_mip(current_z)
+        current_z = self.sliderZ.value()
+        layers = self.sliderMIP.value()
+        mip_data = self.compute_mip(current_z, layers)
     
         circle1_data = self.get_circle_data(self.circles[0], mip_data)
         circle2_data = self.get_circle_data(self.circles[1], mip_data)
@@ -411,8 +434,9 @@ class Viewer(QMainWindow, Ui_MainWindow):
         if not self.image_loaded:
             return
         
-        current_z = self.horizontalSliderZ.value()
-        mip_data = self.compute_mip(current_z)
+        current_z = self.sliderZ.value()
+        layers = self.sliderMIP.value()
+        mip_data = self.compute_mip(current_z, layers)
         
         circle1_data = self.get_circle_data(self.circles[0], mip_data)
         circle2_data = self.get_circle_data(self.circles[1], mip_data)
