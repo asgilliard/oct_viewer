@@ -6,16 +6,19 @@ import sys
 from collections import OrderedDict
 from dataclasses import dataclass
 from enum import Enum
+from functools import partial
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import darkdetect
 import numpy as np
+from matplotlib import colormaps
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide2.QtCore import QPointF, Qt, QTimer
 from PySide2.QtGui import QBrush, QColor, QImage, QPen, QPixmap
 from PySide2.QtWidgets import (
+    QAction,
     QApplication,
     QFileDialog,
     QGraphicsEllipseItem,
@@ -38,7 +41,7 @@ DEFAULT_Z = 256
 DEFAULT_MIP_LAYERS = 25
 DEFAULT_CIRCLE_RADIUS = 30
 MAX_PIXMAP_CACHE_SIZE = 50
-HISTOGRAM_UPDATE_DELAY_MS = 100
+THEME_CHECK_DELAY_MS = 100
 
 
 class CircleType(Enum):
@@ -158,7 +161,7 @@ class PixmapCache:
         """Clear cache."""
         self._cache.clear()
     
-    def cleanup_around(self, key: int, keep_range: int = 10):
+    def cleanup_around(self, key: int, keep_range: int = 50):
         """Remove keys far from current key."""
         if not isinstance(key, int):
             return
@@ -223,65 +226,20 @@ class Analytics:
         self._mask_cache.clear()
 
 
-# class HistogramCanvas(FigureCanvasQTAgg):
-#     """Canvas for displaying histograms."""
-    
-#     def __init__(self):
-#         figure = Figure(figsize=(3, 3), dpi=80)
-#         self.axes = figure.add_subplot(111)
-#         figure.tight_layout()
-#         super().__init__(figure)
-    
-#     @staticmethod
-#     def get_system_theme():
-#         """Detect system theme (light/dark)."""
-#         return darkdetect.theme()  # 'Dark' or 'Light'
-    
-#     def setup_plot_style(self):
-#         is_dark = get_system_theme() == 'Dark'
-        
-#         if is_dark:
-#             self.figure.style.use('dark_background')
-    
-#     def plot_histograms(self, data1: np.ndarray, data2: np.ndarray):
-#         """Plot two histograms."""
-#         if data1.size == 0 or data2.size == 0:
-#             return
-        
-#         self.axes.clear()
-#         self.axes.hist(
-#             data1, bins=256, range=(0, 256), 
-#             color='red', alpha=0.5, label='ASJ', edgecolor='black' 
-#         )
-#         self.axes.hist(
-#             data2, bins=256, range=(0, 256), 
-#             color='green', alpha=0.5, label='ED'
-#         )
-#         self.axes.legend()
-#         self.draw()
-
-
 class HistogramCanvas(FigureCanvasQTAgg):
     """Canvas for displaying histograms."""
     
-    def __init__(self):
+    def __init__(self, theme: str):
         figure = Figure(figsize=(3, 3), dpi=80)
         self.axes = figure.add_subplot(111)
         figure.tight_layout()
         super().__init__(figure)
-        self._setup_style()
+        self._legend = None
+        self._setup_style(theme)
     
-    @staticmethod
-    def get_system_theme():
-        """Detect system theme (light/dark)."""
-        try:
-            return darkdetect.theme()
-        except Exception:
-            return 'Light'
-    
-    def _setup_style(self):
+    def _setup_style(self, theme: str):
         """Apply theme-based styling."""
-        is_dark = self.get_system_theme() == 'Dark'
+        is_dark = theme == 'Dark'
         
         if is_dark:
             bg_color = '#2b2b2b'
@@ -302,14 +260,23 @@ class HistogramCanvas(FigureCanvasQTAgg):
         self.axes.xaxis.label.set_color(fg_color)
         self.axes.yaxis.label.set_color(fg_color)
         self.axes.grid(True, alpha=0.2, color=grid_color)
+        
+        # Update legend if exists
+        if self._legend is not None:
+            self._legend.get_frame().set_facecolor('#2b2b2b' if is_dark else 'white')
+            self._legend.get_frame().set_edgecolor(fg_color)
+            for text in self._legend.get_texts():
+                text.set_color(fg_color)
+        
+        self.draw()
     
-    def plot_histograms(self, data1: np.ndarray, data2: np.ndarray):
+    def plot_histograms(self, data1: np.ndarray, data2: np.ndarray, theme: str):
         """Plot two histograms."""
         if data1.size == 0 or data2.size == 0:
             return
         
         self.axes.clear()
-        self._setup_style()
+        self._legend = None
         
         self.axes.hist(
             data1, bins=256, range=(0, 256), 
@@ -320,13 +287,8 @@ class HistogramCanvas(FigureCanvasQTAgg):
             color='#44ff44', alpha=0.6, label='ED'
         )
         
-        is_dark = self.get_system_theme() == 'Dark'
-        legend = self.axes.legend(facecolor='#2b2b2b' if is_dark else 'white',
-                                   edgecolor='white' if is_dark else 'black')
-        for text in legend.get_texts():
-            text.set_color('white' if is_dark else 'black')
-        
-        self.draw()
+        self._legend = self.axes.legend()
+        self._setup_style(theme)
 
 
 class DraggableCircle(QGraphicsEllipseItem):
@@ -357,6 +319,23 @@ class DraggableCircle(QGraphicsEllipseItem):
     def set_position_callback(self, callback):
         """Set callback for position changes."""
         self._position_callback = callback
+        
+    def set_drag_callbacks(self, start_callback, end_callback):
+        """Set callbacks for drag start/end."""
+        self._drag_start_callback = start_callback
+        self._drag_end_callback = end_callback
+        
+    def mousePressEvent(self, event):
+        """Handle mouse press."""
+        if self._drag_start_callback:
+            self._drag_start_callback()
+        super().mousePressEvent(event)
+        
+    def mouseReleaseEvent(self, event):
+        """Handle mouse release."""
+        if self._drag_end_callback:
+            self._drag_end_callback()
+        super().mouseReleaseEvent(event)
     
     def itemChange(self, change, value):
         """Handle item changes."""
@@ -396,6 +375,8 @@ class CircleManager:
         self.circles: Dict[CircleType, DraggableCircle] = {}
         self.circles_mip: Dict[CircleType, DraggableCircle] = {}
         self._sync_callback = None
+        self._drag_start_callback = None
+        self._drag_end_callback = None
     
     def create_circles(
         self, 
@@ -416,6 +397,7 @@ class CircleManager:
             circle.set_position_callback(
                 lambda ct=circle_type: self._on_position_changed(ct, False)
             )
+            circle.set_drag_callbacks(self._on_drag_start, self._on_drag_end)
             self.circles[circle_type] = circle
             scene.addItem(circle)
             
@@ -425,11 +407,24 @@ class CircleManager:
                 lambda ct=circle_type: self._on_position_changed(ct, True)
             )
             self.circles_mip[circle_type] = circle_mip
+            circle_mip.set_drag_callbacks(self._on_drag_start, self._on_drag_end)
             scene_mip.addItem(circle_mip)
     
-    def set_sync_callback(self, callback):
-        """Set callback for position synchronization."""
-        self._sync_callback = callback
+    def set_callbacks(self, sync_callback, drag_start_callback, drag_end_callback):
+        """Set all callbacks."""
+        self._sync_callback = sync_callback
+        self._drag_start_callback = drag_start_callback
+        self._drag_end_callback = drag_end_callback
+        
+    def _on_drag_start(self):
+        """Handle drag start."""
+        if self._drag_start_callback:
+            self._drag_start_callback()
+        
+    def _on_drag_end(self):
+        """Handle drag end."""
+        if self._drag_end_callback:
+            self._drag_end_callback()
     
     def _on_position_changed(self, circle_type: CircleType, is_mip: bool):
         """Handle position change of a circle."""
@@ -491,66 +486,6 @@ class MetricsTable:
         self.table.setItem(6, col, QTableWidgetItem(str(metrics.size)))
 
 
-# class ImageRenderer:
-#     """Handles image rendering to Qt scenes."""
-    
-#     def __init__(self):
-#         # Cache for QPixmap objects (UI layer)
-#         self._pixmap_cache = PixmapCache()
-#         self._mip_pixmap_cache = PixmapCache()
-    
-#     @staticmethod
-#     def array_to_qimage(arr: np.ndarray) -> QImage:
-#         """Convert numpy array to QImage."""
-#         if arr.size == 0:
-#             return QImage()
-        
-#         if not arr.flags['C_CONTIGUOUS']:
-#             arr = np.ascontiguousarray(arr)
-        
-#         height, width = arr.shape[0], arr.shape[1]
-#         bytes_per_line = width
-#         return QImage(
-#             arr.data, width, height,  # type: ignore
-#             bytes_per_line, QImage.Format_Grayscale8
-#         )  
-    
-#     def get_slice_pixmap(self, slice_data: np.ndarray, z: int) -> QPixmap:
-#         """Get or create pixmap for slice."""
-#         cached = self._pixmap_cache.get(z)
-#         if cached:
-#             return cached
-        
-#         qimage = self.array_to_qimage(slice_data)
-#         pixmap = QPixmap.fromImage(qimage)
-#         self._pixmap_cache.put(z, pixmap)
-#         return pixmap
-    
-#     def get_mip_pixmap(self, mip_data: np.ndarray, z: int, layers: int) -> QPixmap:
-#         """Get or create pixmap for MIP."""
-#         cache_key = (z, layers)
-#         cached = self._mip_pixmap_cache.get(cache_key)
-#         if cached:
-#             return cached
-        
-#         qimage = self.array_to_qimage(mip_data)
-#         pixmap = QPixmap.fromImage(qimage)
-#         self._mip_pixmap_cache.put(cache_key, pixmap)
-#         return pixmap
-    
-#     def cleanup_caches(self, current_z: int, current_layers: int):
-#         """Clean up old cache entries."""
-#         self._pixmap_cache.cleanup_around(current_z)
-        
-#         self._mip_pixmap_cache.remove_by_condition(
-#             lambda k: isinstance(k, tuple) and k[1] != current_layers
-#         )
-    
-#     def clear(self):
-#         """Clear all caches."""
-#         self._pixmap_cache.clear()
-#         self._mip_pixmap_cache.clear()
-
 class ImageRenderer:
     """Handles image rendering to Qt scenes."""
     
@@ -559,48 +494,64 @@ class ImageRenderer:
         self._mip_pixmap_cache = PixmapCache()
     
     @staticmethod
-    def array_to_qimage(arr: np.ndarray, invert: bool = False) -> QImage:
-        """Convert numpy array to QImage."""
+    def array_to_qimage(arr: np.ndarray, invert: bool = False, cmap: str = 'gray') -> QImage:
+        """Convert numpy array to QImage. If cmap is provided -> RGB image via matplotlib colormap."""
         if arr.size == 0:
             return QImage()
-        
-        if invert:
-            arr = 255 - arr
+            
+        arr = np.array(arr, copy=True)
         
         if not arr.flags['C_CONTIGUOUS']:
             arr = np.ascontiguousarray(arr)
         
         height, width = arr.shape[0], arr.shape[1]
-        bytes_per_line = width
-        return QImage(
-            arr.data, width, height,  # type: ignore
-            bytes_per_line, QImage.Format_Grayscale8
-        )  
+        
+        # Grayscale path
+        if cmap == 'gray':
+            if invert:
+                arr = 255 - arr
+            bytes_per_line = width
+            qimg = QImage(arr.data, width, height, bytes_per_line, QImage.Format_Grayscale8)  # type: ignore
+            return qimg.copy()
+        
+        # Colormap path -> produce RGB uint8 array
+        norm = (arr.astype(np.float32) / 255.0).clip(0.0, 1.0)
+        if invert:
+            norm = 1.0 - norm
+        cmap_func = colormaps.get_cmap(cmap)  # type: ignore[attr-defined]
+        rgba = np.asarray(cmap_func(norm))    # shape (H, W, 4), floats 0..1
+        rgb = (rgba[..., :3] * 255).astype(np.uint8)
+        # ensure contiguous
+        if not rgb.flags['C_CONTIGUOUS']:
+            rgb = np.ascontiguousarray(rgb)
+        bytes_per_line = 3 * width
+        qimg = QImage(rgb.data, width, height, bytes_per_line, QImage.Format_RGB888)  # type: ignore
+        return qimg.copy()
     
-    def get_slice_pixmap(self, slice_data: np.ndarray, z: int) -> QPixmap:
+    def get_slice_pixmap(self, slice_data: np.ndarray, z: int, theme: str, palette: str = 'gray') -> QPixmap:
         """Get or create pixmap for slice."""
-        invert = HistogramCanvas.get_system_theme() == 'Light'
-        cache_key = (z, invert)
+        cache_key = (z, theme, palette)
         
         cached = self._pixmap_cache.get(cache_key)
         if cached:
             return cached
         
-        qimage = self.array_to_qimage(slice_data, invert=invert)
+        invert = (theme == 'Light')
+        qimage = self.array_to_qimage(slice_data, invert=invert, cmap=palette)
         pixmap = QPixmap.fromImage(qimage)
         self._pixmap_cache.put(cache_key, pixmap)
         return pixmap
     
-    def get_mip_pixmap(self, mip_data: np.ndarray, z: int, layers: int) -> QPixmap:
+    def get_mip_pixmap(self, mip_data: np.ndarray, z: int, layers: int, theme: str, palette: str = 'gray') -> QPixmap:
         """Get or create pixmap for MIP."""
-        invert = HistogramCanvas.get_system_theme() == 'Light'
-        cache_key = (z, layers, invert)
+        cache_key = (z, layers, theme, palette)
         
         cached = self._mip_pixmap_cache.get(cache_key)
         if cached:
             return cached
         
-        qimage = self.array_to_qimage(mip_data, invert=invert)
+        invert = (theme == 'Light')
+        qimage = self.array_to_qimage(mip_data, invert=invert, cmap=palette)
         pixmap = QPixmap.fromImage(qimage)
         self._mip_pixmap_cache.put(cache_key, pixmap)
         return pixmap
@@ -617,6 +568,7 @@ class ImageRenderer:
         """Clear all caches."""
         self._pixmap_cache.clear()
         self._mip_pixmap_cache.clear()
+        
 
 class Viewer(QMainWindow, Ui_MainWindow):
     """Main viewer window."""
@@ -624,6 +576,12 @@ class Viewer(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        
+        # Flags
+        self._is_slider_dragging = False
+        self._is_circle_dragging = False
+        self._current_theme = self.get_system_theme()
+        self._current_palette: str = 'gray'
         
         # Components
         self.data_manager = ImageDataManager()
@@ -636,35 +594,32 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self._current_mip_item = None
         
         # Setup
+        self._setup_palette_menu()
         self._setup_scenes()
         self._setup_sliders()
+        self._setup_theme_timer()
         self._setup_histogram()
         self._setup_metrics_table()
         self._setup_circles()
         self._setup_connections()
-        self._setup_timer()
-        
-        # Theme change handling
-        self._current_theme = HistogramCanvas.get_system_theme()
-        self._theme_timer = QTimer()
-        self._theme_timer.timeout.connect(self._check_theme)
-        self._theme_timer.start(1000)  # check every second
-            
-    # def _check_theme(self):
-    #     """Check for theme changes."""
-    #     new_theme = HistogramCanvas.get_system_theme()
-    #     if new_theme != self._current_theme:
-    #         self._current_theme = new_theme
-    #         self.histogram_canvas._setup_style()
-    #         self.histogram_canvas.draw()
+    
+    @staticmethod
+    def get_system_theme() -> str:
+        """Detect system theme (light/dark)."""
+        try:
+            theme = darkdetect.theme()
+            return theme if theme is not None else 'Light'
+        except Exception:
+            return 'Light'
     
     def _check_theme(self):
         """Check for theme changes."""
-        new_theme = HistogramCanvas.get_system_theme()
+        new_theme = self.get_system_theme()
         if new_theme != self._current_theme:
             self._current_theme = new_theme
-            self.renderer.clear()  # очистить кэш пиксмапов
-            self.update_views(self.sliderZ.value())  # перерисовать
+            self.renderer.clear()
+            self.histogram_canvas._setup_style(new_theme)
+            self.update_views(self.sliderZ.value(), update_histogram=False)
     
     def _setup_scenes(self):
         """Initialize graphics scenes."""
@@ -694,7 +649,7 @@ class Viewer(QMainWindow, Ui_MainWindow):
     
     def _setup_histogram(self):
         """Initialize histogram canvas."""
-        self.histogram_canvas = HistogramCanvas()
+        self.histogram_canvas = HistogramCanvas(self._current_theme)
         histogram_layout = QVBoxLayout(self.histogramWidget)
         histogram_layout.addWidget(self.histogram_canvas)
     
@@ -705,19 +660,70 @@ class Viewer(QMainWindow, Ui_MainWindow):
     def _setup_circles(self):
         """Initialize measurement circles."""
         self.circle_manager.create_circles(self.scene, self.scene_mip)
-        self.circle_manager.set_sync_callback(self._on_circles_changed)
+        self.circle_manager.set_callbacks(
+            self._on_circles_changed,
+            self._on_circle_drag_start,
+            self._on_circle_drag_end
+        )
+        
+    def _setup_palette_menu(self):
+        self._palette_actions: dict[QAction, str] = {
+            self.actionGray: "gray",
+            self.actionViridis: "viridis",
+            self.actionPlasma: "plasma",
+            self.actionMagma: "magma",
+            self.actionInferno: "inferno",
+            self.actionCividis: "cividis",
+            self.actionJet: "jet"
+        }
+        
+        for action, palette_name in self._palette_actions.items():
+            action.setCheckable(True)
+            action.triggered.connect(partial(self._on_palette_selected, palette_name))
+            
+        self.actionGray.setChecked(True)
     
     def _setup_connections(self):
         """Connect signals and slots."""
         self.actionOpen.triggered.connect(self.open_file)
         self.sliderZ.valueChanged.connect(self.on_z_changed)
+        self.sliderZ.sliderPressed.connect(self._on_slider_pressed)
+        self.sliderZ.sliderReleased.connect(self._on_slider_released)
         self.sliderMIP.valueChanged.connect(self.on_layers_changed)
+        self.sliderMIP.sliderPressed.connect(self._on_slider_pressed)
+        self.sliderMIP.sliderReleased.connect(self._on_slider_released)
     
-    def _setup_timer(self):
-        """Initialize update timer."""
-        self.histogram_timer = QTimer()
-        self.histogram_timer.setSingleShot(True)
-        self.histogram_timer.timeout.connect(self._update_histogram)
+    def _on_slider_pressed(self):
+        """Handle slider press - pause histogram updates."""
+        self._is_slider_dragging = True
+        
+    def _on_slider_released(self):
+        """Handle slider release - resume histogram updates."""
+        self._is_slider_dragging = False
+        self._update_histogram()
+        
+    def _on_circle_drag_start(self):
+        """Handle circle drag start."""
+        self._is_circle_dragging = True
+    
+    def _on_circle_drag_end(self):
+        """Handle circle drag end."""
+        self._is_circle_dragging = False
+        self._update_histogram()
+        
+    def _on_palette_selected(self, palette_name: str):
+        self._current_palette = palette_name
+        for action, name in self._palette_actions.items():
+            action.setChecked(name == palette_name)
+        self.renderer.clear()
+        self.update_views(self.sliderZ.value(), update_histogram=False)
+        
+    def _setup_theme_timer(self):
+        """Initialize theme update timer."""
+        self._current_theme = self.get_system_theme()
+        self._theme_timer = QTimer()
+        self._theme_timer.timeout.connect(self._check_theme)
+        self._theme_timer.start(THEME_CHECK_DELAY_MS)
     
     def open_file(self):
         """Open and load image file."""
@@ -757,20 +763,20 @@ class Viewer(QMainWindow, Ui_MainWindow):
         self.renderer.cleanup_caches(self.sliderZ.value(), layers)
         self.update_views(self.sliderZ.value())
     
-    def update_views(self, z: int):
+    def update_views(self, z: int, update_histogram: bool = True):
         """Update all views for given Z position."""
         
         # Render main slice
         slice_data = self.data_manager.get_slice(z)
         if slice_data is not None:
-            pixmap = self.renderer.get_slice_pixmap(slice_data, z)
+            pixmap = self.renderer.get_slice_pixmap(slice_data, z, self._current_theme, self._current_palette)
             self._update_scene_pixmap(self.scene, pixmap, is_mip=False)
         
         # Render MIP
         layers = self.sliderMIP.value()
         mip_data = self.data_manager.compute_mip(z, layers)
         if mip_data is not None:
-            pixmap = self.renderer.get_mip_pixmap(mip_data, z, layers)
+            pixmap = self.renderer.get_mip_pixmap(mip_data, z, layers, self._current_theme, self._current_palette)
             self._update_scene_pixmap(self.scene_mip, pixmap, is_mip=True)
         
         # Fit views
@@ -783,8 +789,9 @@ class Viewer(QMainWindow, Ui_MainWindow):
         
         # Update metrics and histogram
         self._update_metrics()
-        self.histogram_timer.start(HISTOGRAM_UPDATE_DELAY_MS)
-    
+        if update_histogram and not self._is_slider_dragging:
+            self._update_histogram()
+            
     def _update_scene_pixmap(
         self, 
         scene: QGraphicsScene, 
@@ -809,7 +816,8 @@ class Viewer(QMainWindow, Ui_MainWindow):
     def _on_circles_changed(self):
         """Handle circle position changes."""
         self._update_metrics()
-        self.histogram_timer.start(HISTOGRAM_UPDATE_DELAY_MS)
+        if not self._is_slider_dragging and not self._is_circle_dragging:
+            self._update_histogram()
     
     def _get_current_mip_data(self) -> Optional[np.ndarray]:
         """Get MIP data for current position."""
@@ -863,7 +871,8 @@ class Viewer(QMainWindow, Ui_MainWindow):
         
         self.histogram_canvas.plot_histograms(
             data_arrays[CircleType.ASJ],
-            data_arrays[CircleType.ED]
+            data_arrays[CircleType.ED],
+            self._current_theme
         )
     
     def resizeEvent(self, event):

@@ -333,11 +333,69 @@
     </property>
     <addaction name="actionOpen"/>
    </widget>
+   <widget class="QMenu" name="menuPalette">
+    <property name="title">
+     <string>Palette</string>
+    </property>
+    <addaction name="actionGray"/>
+    <addaction name="actionViridis"/>
+    <addaction name="actionPlasma"/>
+    <addaction name="actionInferno"/>
+    <addaction name="actionMagma"/>
+    <addaction name="actionCividis"/>
+    <addaction name="actionJet"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menuPalette"/>
   </widget>
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>
+   </property>
+  </action>
+  <action name="actionPalette">
+   <property name="text">
+    <string>Color palette</string>
+   </property>
+  </action>
+  <action name="actionViridis">
+   <property name="text">
+    <string>Viridis</string>
+   </property>
+  </action>
+  <action name="actionPlasma">
+   <property name="text">
+    <string>Plasma</string>
+   </property>
+  </action>
+  <action name="actionInferno">
+   <property name="text">
+    <string>Inferno</string>
+   </property>
+  </action>
+  <action name="actionMagma">
+   <property name="text">
+    <string>Magma</string>
+   </property>
+  </action>
+  <action name="actionCividis">
+   <property name="text">
+    <string>Cividis</string>
+   </property>
+  </action>
+  <action name="actionJet">
+   <property name="text">
+    <string>Jet</string>
+   </property>
+  </action>
+  <action name="actionGray">
+   <property name="text">
+    <string>Gray</string>
+   </property>
+  </action>
+  <action name="actionNo_palette">
+   <property name="text">
+    <string>No palette</string>
    </property>
   </action>
  </widget>
