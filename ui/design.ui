@@ -39,10 +39,10 @@
    <widget class="QTableWidget" name="tableMetrics">
     <property name="geometry">
      <rect>
-      <x>1170</x>
-      <y>80</y>
-      <width>241</width>
-      <height>241</height>
+      <x>525</x>
+      <y>510</y>
+      <width>360</width>
+      <height>232</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -53,8 +53,8 @@
     </property>
     <property name="maximumSize">
      <size>
-      <width>256</width>
-      <height>340</height>
+      <width>360</width>
+      <height>232</height>
      </size>
     </property>
     <property name="verticalScrollBarPolicy">
@@ -62,6 +62,9 @@
     </property>
     <property name="horizontalScrollBarPolicy">
      <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="autoScroll">
+     <bool>false</bool>
     </property>
     <property name="editTriggers">
      <set>QAbstractItemView::NoEditTriggers</set>
@@ -76,7 +79,7 @@
      <bool>false</bool>
     </property>
     <property name="showGrid">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="cornerButtonEnabled">
      <bool>true</bool>
@@ -85,7 +88,7 @@
      <number>7</number>
     </property>
     <property name="columnCount">
-     <number>3</number>
+     <number>5</number>
     </property>
     <attribute name="horizontalHeaderVisible">
      <bool>true</bool>
@@ -94,13 +97,13 @@
      <bool>true</bool>
     </attribute>
     <attribute name="horizontalHeaderDefaultSectionSize">
-     <number>80</number>
+     <number>72</number>
     </attribute>
     <attribute name="horizontalHeaderHighlightSections">
      <bool>true</bool>
     </attribute>
     <attribute name="horizontalHeaderMinimumSectionSize">
-     <number>20</number>
+     <number>72</number>
     </attribute>
     <attribute name="horizontalHeaderStretchLastSection">
      <bool>false</bool>
@@ -108,6 +111,12 @@
     <attribute name="verticalHeaderVisible">
      <bool>false</bool>
     </attribute>
+    <attribute name="verticalHeaderDefaultSectionSize">
+     <number>30</number>
+    </attribute>
+    <attribute name="verticalHeaderMinimumSectionSize">
+     <number>30</number>
+    </attribute>
     <row/>
     <row/>
     <row/>
@@ -115,6 +124,8 @@
     <row/>
     <row/>
     <row/>
+    <column/>
+    <column/>
     <column/>
     <column/>
     <column/>
