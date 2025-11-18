@@ -1,76 +1,127 @@
-# OCT Image Viewer
+# Medical OCT Volume Viewer
 
-**For scientific analysis of 512×512×512 uint8 .dat volumes from an OCT scanner**
+Tool for visualizing and analyzing 512×512×512 uint8 OCT
+volumetric data.
 
 ![Interface](screen.png)
 
+## Features
+
+### Core Visualization
+
+-   3D volume navigation with slice-by-slice browsing
+-   Maximum Intensity Projection (MIP) with adjustable depth
+-   Dual view for comparing original slice and MIP
+
+### Analysis Tools
+
+-   Draggable circular ROI markers
+-   Real-time metrics: max, median, Q75, variance, size
+-   Histogram visualization for intensity distribution
+-   3D region analysis across Z‑slices
+
+### User Experience
+
+-   Automatic dark/light theme detection
+-   Multiple color palettes: gray, viridis, plasma, magma, inferno, jet
+-   LRU caching and optional memory‑mapped loading
+-   Responsive UI with debounced updates
+
 ## Quick Start
-1. Download `oct_viewer.exe` from [latest release](https://github.com/asgilliard/oct_viewer/releases/latest)
-2. Run and open your .dat file
-3. Use slider to navigate slices
 
-## For Developers
+1.  Download `oct_viewer.exe` from the latest release.
+2.  Run and open a `.dat` volume file.
+3.  Use the Z‑slider to navigate slices.
+4.  Adjust MIP depth.
+5.  Drag ROI circles to measure regions.
 
-A simple viewer for `.dat` images from an OCT scanner, built with Python and PySide2.
+## Developer Guide
+
+### Architecture
+
+-   MVC separation: data, visualization, control
+-   Modular components (ImageDataManager, Analytics, Renderer)
+-   Full type annotation
+-   Structured logging
 
 ### Requirements
 
-- Python 3.8
-- NumPy
-- [PySide2](https://pypi.org/project/PySide2/)
-- [uv](https://docs.astral.sh/uv/) - python package manager (optional)
+-   Python 3.8+
+-   NumPy
+-   PySide2
+-   Matplotlib
+-   darkdetect
 
+### Installation
 
-### Setup and use
+#### Using uv
 
-1. Sync dependencies using uv:
-
-```sh
+``` bash
 uv sync
 ```
 
-or by creating .venv and using pip:
+#### Using pip
 
-```sh
+``` bash
 python -m venv .venv
-
-# Linux or macOS
 source .venv/bin/activate
-# Windows
-.venv\Scripts\activate 
-
 pip install -r requirements.txt
 ```
 
-2. Run:
+### Running the Application
 
-```sh
+``` bash
 uv run main.py
-
-# Or using python:
+# or
 python main.py
 ```
 
-3. Use:
+### Data Analysis Workflow
 
-Use menu bar to open .dat file.
+1.  Load a `.dat` volume.
+2.  Navigate slices.
+3.  Configure MIP depth.
+4.  Place measurement circles.
+5.  Review metrics and histograms.
 
-### .dat generation
+### Generating Test Data
 
-You can generate an example .dat file using built-in generator:
-
-```sh
+``` bash
 uv run generator.py
 ```
 
-Now open images/generated.dat
+### Rebuilding UI from Qt Designer
 
-### Building design_ui.py
-
-```sh
+``` bash
 uv run pyside2-uic ui/design.ui -o design_ui.py
 ```
 
-### Notes
-- Make sure .dat files are 512×512×512 and uint8.
-- The viewer uses QGraphicsView for scalable display.
+## Technical Notes
+
+-   Raw volume size: 512×512×512 uint8 (134,217,728 bytes)
+-   Optional memmap mode for large files
+-   LRU caching for pixmaps, MIP slices, and masks
+-   Windows 7+ support via Python 3.8 + PySide2
+
+## Architecture Overview
+
+-   **ImageDataManager**: loading and memory management
+-   **Analytics**: statistical processing
+-   **CircleManager**: ROI tracking and interaction
+-   **PixmapCache**: optimized rendering
+-   **MetricsTable**: structured metric reporting
+
+## Code Quality
+
+-   ruff + pyright configuration
+-   Full type hints
+-   Structured logging
+-   Robust error handling
+
+## Building Executables
+
+``` bash
+uv run pyinstaller --onefile --windowed main.py
+```
+
+Built for scientific research and medical image analysis.
