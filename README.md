@@ -3,7 +3,7 @@
 Tool for visualizing and analyzing 512×512×512 uint8 OCT
 volumetric data.
 
-![Interface](screen.png)
+![Interface](screenshot.png)
 
 ## Features
 
