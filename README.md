@@ -24,8 +24,8 @@ volumetric data.
 
 -   Automatic dark/light theme detection
 -   Multiple color palettes: gray, viridis, plasma, magma, inferno, jet
--   LRU caching and optional memory‑mapped loading
--   Responsive UI with debounced updates
+-   LRU caching and optional RAM loading
+-   Responsive UI with realtime updates
 
 ## Quick Start
 

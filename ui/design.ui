@@ -20,7 +20,7 @@
    <string>oct viewer</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="histogramWidget" native="true">
+   <widget class="QWidget" name="histogramWidget_MIP" native="true">
     <property name="geometry">
      <rect>
       <x>29</x>
@@ -35,11 +35,23 @@
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
+    <property name="minimumSize">
+     <size>
+      <width>250</width>
+      <height>250</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>250</width>
+      <height>250</height>
+     </size>
+    </property>
    </widget>
    <widget class="QTableWidget" name="tableMetrics">
     <property name="geometry">
      <rect>
-      <x>525</x>
+      <x>1000</x>
       <y>510</y>
       <width>360</width>
       <height>232</height>
@@ -206,8 +218,24 @@
       <enum>Qt::PlainText</enum>
      </property>
     </widget>
+    <widget class="QPushButton" name="pushButtonCenterCircles">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>5</y>
+       <width>113</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Center Circles</string>
+     </property>
+     <property name="shortcut">
+      <string>C</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QGraphicsView" name="graphicsView">
+   <widget class="SmartGraphicsView" name="graphicsView">
     <property name="geometry">
      <rect>
       <x>300</x>
@@ -225,7 +253,7 @@
     <property name="minimumSize">
      <size>
       <width>400</width>
-      <height>400</height>
+      <height>200</height>
      </size>
     </property>
     <property name="maximumSize">
@@ -244,7 +272,7 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="graphicsView_MIP">
+   <widget class="SmartGraphicsView" name="graphicsView_MIP">
     <property name="geometry">
      <rect>
       <x>710</x>
@@ -262,7 +290,7 @@
     <property name="minimumSize">
      <size>
       <width>400</width>
-      <height>400</height>
+      <height>200</height>
      </size>
     </property>
     <property name="maximumSize">
@@ -350,11 +378,11 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox_Epres">
+   <widget class="QGroupBox" name="groupBox_Epres_MIP">
     <property name="geometry">
      <rect>
-      <x>1230</x>
-      <y>100</y>
+      <x>340</x>
+      <y>530</y>
       <width>120</width>
       <height>80</height>
      </rect>
@@ -370,12 +398,51 @@
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
+    <widget class="QLabel" name="labelEpresMIP">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>80</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>18</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_Econd">
+   <widget class="QGroupBox" name="groupBox_Econd_MIP">
     <property name="geometry">
      <rect>
-      <x>1230</x>
-      <y>210</y>
+      <x>340</x>
+      <y>640</y>
       <width>120</width>
       <height>80</height>
      </rect>
@@ -391,6 +458,193 @@
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
+    <widget class="QLabel" name="labelEcondMIP">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>80</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>18</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="histogramWidget_Volume" native="true">
+    <property name="geometry">
+     <rect>
+      <x>500</x>
+      <y>509</y>
+      <width>250</width>
+      <height>250</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>250</width>
+      <height>250</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>250</width>
+      <height>250</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_Econd_Volume">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>640</y>
+      <width>120</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+    <property name="title">
+     <string>Econd</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <widget class="QLabel" name="labelEcondVolume">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>80</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>18</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_Epres_Volume">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>530</y>
+      <width>120</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+    <property name="title">
+     <string>Epres</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <widget class="QLabel" name="labelEpresVolume">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>80</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>18</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -407,6 +661,9 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpen_Folder"/>
+    <addaction name="actionPrevious_File"/>
+    <addaction name="actionNext_File"/>
    </widget>
    <widget class="QMenu" name="menuPalette">
     <property name="title">
@@ -420,8 +677,15 @@
     <addaction name="actionCividis"/>
     <addaction name="actionJet"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionShow_File_Tree"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menuPalette"/>
+   <addaction name="menuView"/>
   </widget>
   <action name="actionOpen">
    <property name="text">
@@ -473,7 +737,37 @@
     <string>No palette</string>
    </property>
   </action>
+  <action name="actionOpen_Folder">
+   <property name="text">
+    <string>Open Folder</string>
+   </property>
+  </action>
+  <action name="actionNext_File">
+   <property name="text">
+    <string>Next File</string>
+   </property>
+  </action>
+  <action name="actionPrevious_File">
+   <property name="text">
+    <string>Previous File</string>
+   </property>
+  </action>
+  <action name="actionShow_File_Tree">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show File Tree</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SmartGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>smart_graphics</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

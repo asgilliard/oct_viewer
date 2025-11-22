@@ -1,12 +1,13 @@
 [project]
 name = "oct_viewer"
-version = "0.3.0"
+version = "1.0.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "darkdetect>=0.8.0",
     "matplotlib>=3.7.5",
+    "numba>=0.58.1",
     "numpy==1.24.4",
     "pyqtgraph>=0.13.3",
     "pyside2>=5.15.2.1",
